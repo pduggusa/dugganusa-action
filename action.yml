@@ -1,0 +1,34 @@
+name: 'DugganUSA Threat Intel Scan'
+description: 'Scan code for IPs, domains, hashes, and CVEs against 1M+ threat indicators. Block PRs containing known-bad indicators.'
+author: 'DugganUSA LLC'
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  api-key:
+    description: 'DugganUSA API key (optional — free tier works without one)'
+    required: false
+    default: ''
+  scan-patterns:
+    description: 'Glob pattern for files to scan'
+    required: false
+    default: '**/*.{js,ts,py,json,yml,yaml,conf,cfg,ini,env,md,txt,tf,hcl}'
+  fail-on-match:
+    description: 'Fail the action (exit 1) if threat indicators are found'
+    required: false
+    default: 'true'
+  format:
+    description: 'Output format: table, json, or markdown'
+    required: false
+    default: 'table'
+
+outputs:
+  found:
+    description: 'Number of threat indicators found'
+  scanned:
+    description: 'Number of IOC candidates scanned'
+
+runs:
+  using: 'node20'
+  main: 'index.js'
