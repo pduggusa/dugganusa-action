@@ -1,6 +1,15 @@
 # DugganUSA Threat Intel Scan — GitHub Action
 
-Scan PRs for IPs, domains, SHA256 hashes, and CVEs against 1,080,000+ threat indicators. Block merges containing known-bad indicators.
+Scan PRs for IPs, domains, SHA256 hashes, and CVEs against 1.10M+ threat indicators. Block merges containing known-bad indicators.
+
+## What's New (v1.2.0)
+
+- **Supply-chain detection is the headline.** The corpus now ingests OSV malicious-package feeds for **both npm and PyPI** — named-malicious packages, zero-heuristic, daily — alongside daily GitHub Hunt detections of malware-staging repos and install-time execution signatures. Scan your `package.json`, `requirements.txt`, lockfiles, and CI config in the PR and catch a poisoned dependency before it merges.
+- **Three live, no-auth, deploy-durable validation endpoints** prove feed quality behind the action:
+  - **Novelty** — [feed-uniqueness](https://analytics.dugganusa.com/api/v1/feed-uniqueness): ~75%+ of what we publish ThreatFox doesn't have.
+  - **Timeliness** — [kev-lead](https://analytics.dugganusa.com/api/v1/kev-lead): exploited CVEs flagged ~31 days ahead of CISA KEV on average.
+  - **Accuracy** — [spamhaus-validation](https://analytics.dugganusa.com/api/v1/spamhaus-validation): Spamhaus independently corroborates our first-hand contributions.
+- **STIX feed is now API-key-enforced** — pass a **free registered key** as `api-key` (anonymous requests get 401, unregistered Bearer gets 429). Register at [analytics.dugganusa.com/stix/register](https://analytics.dugganusa.com/stix/register).
 
 ## Usage
 
@@ -15,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pduggusa/dugganusa-action@v1
         with:
-          api-key: ${{ secrets.DUGGANUSA_API_KEY }}  # optional
+          api-key: ${{ secrets.DUGGANUSA_API_KEY }}  # free registered key — see below
           fail-on-match: 'true'
 ```
 
@@ -23,7 +32,7 @@ jobs:
 
 | Input | Description | Default |
 |-------|-------------|---------|
-| `api-key` | DugganUSA API key (optional) | `''` |
+| `api-key` | DugganUSA API key — free registered key ([register](https://analytics.dugganusa.com/stix/register)) | `''` |
 | `scan-patterns` | Glob pattern for files to scan | `**/*.{js,ts,py,json,yml,yaml,conf,cfg,ini,env,md,txt,tf,hcl}` |
 | `fail-on-match` | Fail the action if threats found | `true` |
 | `format` | Output format: table, json, markdown | `table` |
@@ -45,12 +54,12 @@ jobs:
 
 ## Free API Key
 
-[analytics.dugganusa.com/stix/register](https://analytics.dugganusa.com/stix/register) — works without one at reduced rate limits.
+The STIX feed is API-key-enforced: anonymous requests get `401`, an unregistered Bearer gets `429`. The **free tier is a free *registered* key** — register at [analytics.dugganusa.com/stix/register](https://analytics.dugganusa.com/stix/register) and pass it as `api-key`.
 
 ## Part of the DugganUSA Ecosystem
 
 - [VS Code Extension](https://marketplace.visualstudio.com/items?itemName=DugganUSALLC.dugganusa-threat-intel)
-- [CLI Tool](https://github.com/pduggusa/dugganusa-cli) — `npx dugganusa-lookup`
+- [CLI Tool](https://github.com/pduggusa/dugganusa-cli) — `npx dugganusa-cli`
 - [STIX Feed](https://analytics.dugganusa.com/api/v1/stix-feed)
 - [dugganusa.com](https://www.dugganusa.com)
 

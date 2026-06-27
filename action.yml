@@ -1,5 +1,5 @@
 name: 'DugganUSA Threat Intel Scan'
-description: 'Scan code for IPs, domains, hashes, and CVEs against 1M+ threat indicators. Block PRs containing known-bad indicators.'
+description: 'Scan code for IPs, domains, hashes, and CVEs against 1.10M+ threat indicators. Block PRs containing known-bad indicators.'
 author: 'DugganUSA LLC'
 branding:
   icon: 'shield'
@@ -7,7 +7,7 @@ branding:
 
 inputs:
   api-key:
-    description: 'DugganUSA API key (optional — free tier works without one)'
+    description: 'DugganUSA API key — free registered key from analytics.dugganusa.com/stix/register (feed is key-enforced)'
     required: false
     default: ''
   scan-patterns:
