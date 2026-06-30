@@ -74,7 +74,7 @@ async function run() {
     const failOnMatch = core.getInput('fail-on-match') === 'true';
     const format = core.getInput('format');
 
-    core.info('DugganUSA Threat Intel Scan — 1.08M+ IOCs');
+    core.info('DugganUSA Threat Intel Scan — 1.5M+ IOCs');
     core.info('Scan pattern: ' + scanPatterns);
 
     // Find files

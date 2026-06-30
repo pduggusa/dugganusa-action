@@ -1,6 +1,6 @@
 {
   "name": "dugganusa-action",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "private": true,
   "description": "GitHub Action: scan PRs for threat indicators against 1.5M+ IOCs",
   "main": "index.js",
