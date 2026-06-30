@@ -2,14 +2,15 @@
 
 Scan PRs for IPs, domains, SHA256 hashes, and CVEs against 1.5M+ threat indicators. Block merges containing known-bad indicators.
 
-## What's New (v1.2.1)
+## What's New (v1.3.0)
 
+- **The liveness loop is now wired.** When the scan finds indicators that match our corpus, the Action reports them back to `POST /api/v1/feed/hit` (`consumer_kind: action`, `action: observed`) so the [feed-efficacy](https://analytics.dugganusa.com/api/v1/feed-efficacy) axis reflects real consumption. Opt out with `report-hits: 'false'`. It sends **only the matched indicator** — never repo, file, branch, or actor — and never fails your build.
 - **Supply-chain detection is the headline.** The corpus now ingests OSV malicious-package feeds for **both npm and PyPI** — named-malicious packages, zero-heuristic, daily — alongside daily GitHub Hunt detections of malware-staging repos and install-time execution signatures. Scan your `package.json`, `requirements.txt`, lockfiles, and CI config in the PR and catch a poisoned dependency before it merges.
 - **Four live, no-auth, deploy-durable validation endpoints** prove feed quality behind the action:
   - **Novelty** — [feed-uniqueness](https://analytics.dugganusa.com/api/v1/feed-uniqueness): ~75%+ of what we publish ThreatFox doesn't have.
   - **Timeliness** — [kev-lead](https://analytics.dugganusa.com/api/v1/kev-lead): a live ledger of how far ahead of CISA KEV we flagged each exploited CVE — positive leads, same-day, and no-receipt all shown honestly, with receipts.
   - **Accuracy** — [spamhaus-validation](https://analytics.dugganusa.com/api/v1/spamhaus-validation): Spamhaus independently corroborates our first-hand contributions.
-  - **Liveness** — [feed-efficacy](https://analytics.dugganusa.com/api/v1/feed-efficacy): opt-in consumer reports of when our indicators actually fire on real traffic — proof the feed is operationally live, not just large. Consumers can opt in by reporting hits to `POST /api/v1/feed/hit` (privacy-preserving — only the matched indicator is sent, never victim data).
+  - **Liveness** — [feed-efficacy](https://analytics.dugganusa.com/api/v1/feed-efficacy): consumer reports of when our indicators actually fire on real traffic — proof the feed is operationally live, not just large. **This Action reports to it** (see `report-hits` below): only the matched indicator is sent, never victim data.
 - **STIX feed is now API-key-enforced** — pass a **free registered key** as `api-key` (anonymous requests get 401, unregistered Bearer gets 429). Register at [analytics.dugganusa.com/stix/register](https://analytics.dugganusa.com/stix/register).
 
 ## Usage
@@ -36,6 +37,7 @@ jobs:
 | `api-key` | DugganUSA API key — free registered key ([register](https://analytics.dugganusa.com/stix/register)) | `''` |
 | `scan-patterns` | Glob pattern for files to scan | `**/*.{js,ts,py,json,yml,yaml,conf,cfg,ini,env,md,txt,tf,hcl}` |
 | `fail-on-match` | Fail the action if threats found | `true` |
+| `report-hits` | Report matched indicators to the [feed-efficacy](https://analytics.dugganusa.com/api/v1/feed-efficacy) liveness axis (`POST /api/v1/feed/hit`). Indicator-only — never repo/file/actor context. Requires `api-key`; non-fatal. Set `false` to opt out. | `true` |
 | `format` | Output format: table, json, markdown | `table` |
 
 ## Outputs

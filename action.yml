@@ -18,6 +18,10 @@ inputs:
     description: 'Fail the action (exit 1) if threat indicators are found'
     required: false
     default: 'true'
+  report-hits:
+    description: 'Report confirmed indicators back to the DugganUSA feed-efficacy (liveness) axis. Indicator-only — never repo/file/actor context. Requires api-key. Set to false to opt out.'
+    required: false
+    default: 'true'
   format:
     description: 'Output format: table, json, or markdown'
     required: false

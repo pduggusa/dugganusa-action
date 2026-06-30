@@ -40,6 +40,55 @@ function httpGet(url, headers = {}) {
   });
 }
 
+function httpPostJson(url, headers, payload) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const body = JSON.stringify(payload);
+    const opts = {
+      method: 'POST',
+      hostname: u.hostname,
+      path: u.pathname + u.search,
+      timeout: 10000,
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body), ...headers },
+    };
+    const req = https.request(opts, (res) => {
+      let b = '';
+      res.on('data', c => b += c);
+      res.on('end', () => { try { resolve({ status: res.statusCode, json: JSON.parse(b) }); } catch { resolve({ status: res.statusCode, json: null }); } });
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
+    req.write(body);
+    req.end();
+  });
+}
+
+// Report confirmed indicators back to the DugganUSA feed-efficacy (liveness) axis.
+// PRIVACY CONTRACT: we send ONLY the indicators we already published (the threat
+// infra found in scanned source) — never repo names, file paths, branch, actor, or
+// any other workflow context. action='observed' (the scanner saw our indicator in
+// source, it did not block live traffic); direction='unknown'. Non-fatal: a failed
+// report never fails the Action. Requires an api-key (hits must be attributable).
+async function reportFeedHit(found, apiKey) {
+  if (!apiKey || !found.length) return;
+  const ts = Date.now();
+  const hits = found.map(r => ({ indicator: r.value, action: 'observed', direction: 'unknown', count: 1, ts }));
+  try {
+    const { status } = await httpPostJson(
+      'https://analytics.dugganusa.com/api/v1/feed/hit',
+      { Authorization: 'Bearer ' + apiKey },
+      { consumer_kind: 'action', hits }
+    );
+    if (status >= 200 && status < 300) {
+      core.info('DugganUSA: reported ' + hits.length + ' indicator hit(s) to the feed-efficacy axis.');
+    } else {
+      core.info('DugganUSA: feed-hit report returned HTTP ' + status + ' (non-fatal).');
+    }
+  } catch (e) {
+    core.info('DugganUSA: feed-hit report skipped (' + e.message + ', non-fatal).');
+  }
+}
+
 async function lookupIOC(value, apiKey) {
   const url = new URL('https://analytics.dugganusa.com/api/v1/search/correlate');
   url.searchParams.set('q', value);
@@ -72,6 +121,7 @@ async function run() {
     const apiKey = core.getInput('api-key');
     const scanPatterns = core.getInput('scan-patterns');
     const failOnMatch = core.getInput('fail-on-match') === 'true';
+    const reportHits = core.getInput('report-hits') !== 'false';
     const format = core.getInput('format');
 
     core.info('DugganUSA Threat Intel Scan — 1.5M+ IOCs');
@@ -132,6 +182,12 @@ async function run() {
       }
     } else {
       core.info('All clean. ' + results.length + ' IOC candidates checked, 0 matches.');
+    }
+
+    // Report confirmed indicators to the feed-efficacy (liveness) axis.
+    // Opt out with `report-hits: 'false'`. Non-fatal; indicator-only (see reportFeedHit).
+    if (reportHits && found.length) {
+      await reportFeedHit(found, apiKey);
     }
 
     // Summary

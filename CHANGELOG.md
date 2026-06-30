@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0] - 2026-06-30
+
+### Added
+- **Feed-efficacy hit reporting (liveness loop).** When the scan finds indicators that match the DugganUSA corpus, the Action now reports them to `POST /api/v1/feed/hit` (`consumer_kind: 'action'`, `action: 'observed'`, `direction: 'unknown'`), closing the Liveness validation axis (`/api/v1/feed-efficacy`). Opt out with `report-hits: 'false'`; requires `api-key` (hits must be attributable). Reporting is non-fatal — a failed report never fails your build.
+- New `report-hits` input (default `true`).
+- **Privacy contract:** the Action sends ONLY the matched indicator values — never repo names, file paths, branch, actor, or any other workflow context. (The platform also drops any victim-side field server-side.)
+
 ## [1.2.2] - 2026-06-30
 
 ### Fixed
