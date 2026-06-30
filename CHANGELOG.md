@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.1] - 2026-06-30
+
+### Security
+- Cleared all 9 Dependabot alerts (3 high, 4 moderate, 2 low) — all were the transitive `undici` (`< 6.27.0`, WebSocket/fetch paths not exercised by this Action, flagged by version range). Added an `overrides` forcing `undici ^6.27.0` and bumped `@actions/core` to `^1.11.1` / `@actions/glob` to `^0.5.0`. `npm audit` now reports 0 vulnerabilities. Action runs on `node20`, so undici 6 (Node ≥18) is in range.
+
 ## [1.3.0] - 2026-06-30
 
 ### Added
