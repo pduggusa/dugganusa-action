@@ -1,14 +1,15 @@
 # DugganUSA Threat Intel Scan — GitHub Action
 
-Scan PRs for IPs, domains, SHA256 hashes, and CVEs against 1.10M+ threat indicators. Block merges containing known-bad indicators.
+Scan PRs for IPs, domains, SHA256 hashes, and CVEs against 1.5M+ threat indicators. Block merges containing known-bad indicators.
 
-## What's New (v1.2.0)
+## What's New (v1.2.1)
 
 - **Supply-chain detection is the headline.** The corpus now ingests OSV malicious-package feeds for **both npm and PyPI** — named-malicious packages, zero-heuristic, daily — alongside daily GitHub Hunt detections of malware-staging repos and install-time execution signatures. Scan your `package.json`, `requirements.txt`, lockfiles, and CI config in the PR and catch a poisoned dependency before it merges.
-- **Three live, no-auth, deploy-durable validation endpoints** prove feed quality behind the action:
+- **Four live, no-auth, deploy-durable validation endpoints** prove feed quality behind the action:
   - **Novelty** — [feed-uniqueness](https://analytics.dugganusa.com/api/v1/feed-uniqueness): ~75%+ of what we publish ThreatFox doesn't have.
-  - **Timeliness** — [kev-lead](https://analytics.dugganusa.com/api/v1/kev-lead): exploited CVEs flagged ~31 days ahead of CISA KEV on average.
+  - **Timeliness** — [kev-lead](https://analytics.dugganusa.com/api/v1/kev-lead): a live ledger of how far ahead of CISA KEV we flagged each exploited CVE — positive leads, same-day, and no-receipt all shown honestly, with receipts.
   - **Accuracy** — [spamhaus-validation](https://analytics.dugganusa.com/api/v1/spamhaus-validation): Spamhaus independently corroborates our first-hand contributions.
+  - **Liveness** — [feed-efficacy](https://analytics.dugganusa.com/api/v1/feed-efficacy): opt-in consumer reports of when our indicators actually fire on real traffic — proof the feed is operationally live, not just large. Consumers can opt in by reporting hits to `POST /api/v1/feed/hit` (privacy-preserving — only the matched indicator is sent, never victim data).
 - **STIX feed is now API-key-enforced** — pass a **free registered key** as `api-key` (anonymous requests get 401, unregistered Bearer gets 429). Register at [analytics.dugganusa.com/stix/register](https://analytics.dugganusa.com/stix/register).
 
 ## Usage

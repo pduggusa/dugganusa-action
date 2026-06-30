@@ -1,5 +1,5 @@
 name: 'DugganUSA Threat Intel Scan'
-description: 'Scan code for IPs, domains, hashes, and CVEs against 1.10M+ threat indicators. Block PRs containing known-bad indicators.'
+description: 'Scan code for IPs, domains, hashes, and CVEs against 1.5M+ threat indicators. Block PRs containing known-bad indicators.'
 author: 'DugganUSA LLC'
 branding:
   icon: 'shield'
