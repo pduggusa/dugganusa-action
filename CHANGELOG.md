@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0] - 2026-07-19
+
+### Security
+- **Fixed a fail-open defect: a failed lookup was reported as "clean" and the gate passed.** Every error path in `lookupIOC` returned a bare `{ found: false }` — byte-identical to a verified-clean result. An expired API key, a 429, a timeout, or a full API outage therefore rendered as "All clean" and exited 0, turning a customer's PR security check GREEN while nothing had actually been checked.
+- **`httpGet` never checked `res.statusCode`.** Non-2xx responses (401/429/5xx) carry a parseable JSON error body, which was parsed and its absent `correlations` read as "no hits". This was live: anonymous access to `/api/v1/search/correlate` now returns HTTP 401, so any run without an `api-key` (an optional input, default `''`) was reporting every indicator clean. Non-2xx is now a failed lookup, not an empty one.
+- Lookups are now tri-state: `found` / `not-found` / `unknown`, matching `dugganusa-scanner-core` v1.3.0 (`ok`, `status`). `found` retained for backwards compatibility.
+- Unverified indicators get their own warning annotations and summary table, and are never counted as clean.
+
+### Added
+- New `fail-on-unknown` input (defaults to the value of `fail-on-match`). A gate that could not complete its check does not report a pass. Set to `false` to accept the old behavior of letting outages through.
+- New `unknown` and `clean` outputs.
+
 ## [1.3.1] - 2026-06-30
 
 ### Security

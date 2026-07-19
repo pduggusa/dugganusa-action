@@ -18,6 +18,10 @@ inputs:
     description: 'Fail the action (exit 1) if threat indicators are found'
     required: false
     default: 'true'
+  fail-on-unknown:
+    description: 'Fail the action if an indicator could not be checked (expired key, rate limit, timeout, API outage). An unverified indicator is not a clean one -- a gate that could not run should not report a pass. Defaults to the value of fail-on-match. Set to false to let outages through.'
+    required: false
+    default: ''
   report-hits:
     description: 'Report confirmed indicators back to the DugganUSA feed-efficacy (liveness) axis. Indicator-only — never repo/file/actor context. Requires api-key. Set to false to opt out.'
     required: false
@@ -32,6 +36,10 @@ outputs:
     description: 'Number of threat indicators found'
   scanned:
     description: 'Number of IOC candidates scanned'
+  clean:
+    description: 'Number of IOC candidates successfully verified as clean'
+  unknown:
+    description: 'Number of IOC candidates that could NOT be checked (lookup failed). These are unverified, not clean.'
 
 runs:
   using: 'node20'

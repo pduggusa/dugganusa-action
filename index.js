@@ -33,7 +33,16 @@ function httpGet(url, headers = {}) {
     const req = https.get(url, { headers, timeout: 10000 }, (res) => {
       let body = '';
       res.on('data', c => body += c);
-      res.on('end', () => { try { resolve(JSON.parse(body)); } catch { reject(new Error('Invalid JSON')); } });
+      res.on('end', () => {
+        // A non-2xx response (401 expired key, 429 rate limit, 5xx outage) often
+        // still carries a parseable JSON error body. Parsing it and reading the
+        // absent `correlations` as "no hits" is how an outage used to read as
+        // clean. Treat any non-2xx as a failed lookup, not an empty one.
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          return reject(new Error('HTTP ' + res.statusCode));
+        }
+        try { resolve(JSON.parse(body)); } catch { reject(new Error('Invalid JSON')); }
+      });
     });
     req.on('error', reject);
     req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
@@ -98,8 +107,19 @@ async function lookupIOC(value, apiKey) {
     const json = await httpGet(url.toString(), headers);
     const correlations = json.data?.correlations || {};
     const hits = Object.values(correlations).reduce((s, h) => s + (Array.isArray(h) ? h.length : 0), 0);
-    return hits > 0 ? { found: true, hits, data: correlations } : { found: false, hits: 0 };
-  } catch (e) { return { found: false, hits: 0, error: e.message }; }
+    return hits > 0
+      ? { ok: true, status: 'found', found: true, hits, data: correlations }
+      : { ok: true, status: 'not-found', found: false, hits: 0 };
+  } catch (e) {
+    // FAIL-CLOSED. Absence of evidence is not evidence of safety. This used to
+    // return a bare { found: false }, which is byte-identical to a verified-clean
+    // lookup -- so an expired key, a 429, a timeout, or a full API outage turned a
+    // customer's PR security check GREEN. `status: 'unknown'` keeps the failure
+    // distinguishable all the way up to the gate decision in run().
+    // Some socket errors (ECONNREFUSED) carry an empty .message, so fall back to
+    // .code -- the reason string is the operator's only clue about what broke.
+    return { ok: false, status: 'unknown', found: false, hits: 0, error: e.message || e.code || 'unknown error' };
+  }
 }
 
 function summarize(data) {
@@ -121,6 +141,10 @@ async function run() {
     const apiKey = core.getInput('api-key');
     const scanPatterns = core.getInput('scan-patterns');
     const failOnMatch = core.getInput('fail-on-match') === 'true';
+    // Defaults to whatever fail-on-match is set to: if you are using this Action as
+    // a blocking gate, a lookup you could not complete is a gate you cannot honor.
+    const failOnUnknownInput = core.getInput('fail-on-unknown');
+    const failOnUnknown = failOnUnknownInput === '' ? failOnMatch : failOnUnknownInput === 'true';
     const reportHits = core.getInput('report-hits') !== 'false';
     const format = core.getInput('format');
 
@@ -162,9 +186,29 @@ async function run() {
       results.push({ ...ioc, ...r });
     }
 
-    const found = results.filter(r => r.found);
+    // Three outcomes, not two: confirmed threat / verified clean / LOOKUP FAILED.
+    // `unknown` indicators were never actually checked -- the API did not answer.
+    // Folding them in with the clean ones (the old `filter(r => r.found)` alone)
+    // is what let an outage pass the gate silently.
+    const found = results.filter(r => r.ok && r.found);
+    const unknown = results.filter(r => !r.ok);
+    const clean = results.filter(r => r.ok && !r.found);
+
     core.setOutput('found', String(found.length));
     core.setOutput('scanned', String(results.length));
+    core.setOutput('unknown', String(unknown.length));
+    core.setOutput('clean', String(clean.length));
+
+    // Surface every unverified indicator as an annotation. Silence here would be
+    // indistinguishable from a clean bill of health, which is the whole defect.
+    if (unknown.length) {
+      core.warning('DugganUSA: ' + unknown.length + ' indicator(s) could NOT be checked (lookup failed). These are UNVERIFIED, not clean.');
+      for (const r of unknown) {
+        core.warning(r.value + ' -- lookup failed: ' + (r.error || 'unknown error') + ' (in: ' + r.files.slice(0, 3).join(', ') + ')', {
+          title: 'Threat Lookup Failed (unverified)',
+        });
+      }
+    }
 
     // Output results
     if (found.length) {
@@ -180,8 +224,20 @@ async function run() {
       if (failOnMatch) {
         core.setFailed('DugganUSA: ' + found.length + ' threat indicator(s) found in scanned files. See annotations above.');
       }
+    } else if (unknown.length && unknown.length === results.length) {
+      // Nothing was verified at all -- do NOT say "all clean".
+      core.warning('DugganUSA: NO indicators could be verified (' + unknown.length + ' lookup failure(s)). This scan proves nothing.');
     } else {
-      core.info('All clean. ' + results.length + ' IOC candidates checked, 0 matches.');
+      core.info('All clean. ' + clean.length + ' IOC candidate(s) verified clean, 0 matches.');
+    }
+
+    // A gate that could not complete its check must not report a pass. If the
+    // caller asked us to block on threats, they are relying on this step to be a
+    // real control -- and an unverified indicator is exactly the case where we
+    // cannot honestly say the code is clean. Opt out with `fail-on-unknown: false`
+    // (accepting that an API outage will then let the PR through).
+    if (unknown.length && failOnUnknown) {
+      core.setFailed('DugganUSA: ' + unknown.length + ' indicator(s) could not be verified (lookup failed). Failing closed -- absence of evidence is not evidence of safety. Set fail-on-unknown: false to override.');
     }
 
     // Report confirmed indicators to the feed-efficacy (liveness) axis.
@@ -198,8 +254,22 @@ async function run() {
         ['Files scanned', String(files.length)],
         ['IOC candidates', String(allIOCs.size)],
         ['Checked against API', String(results.length)],
+        ['Verified clean', String(clean.length)],
         ['Threat indicators found', String(found.length)],
+        ['Unverified (lookup failed)', String(unknown.length)],
       ]);
+
+    if (unknown.length) {
+      core.summary.addHeading('Unverified Indicators', 3);
+      const urows = [
+        [{ data: 'Indicator', header: true }, { data: 'Reason', header: true }, { data: 'File(s)', header: true }],
+      ];
+      for (const r of unknown) {
+        urows.push([r.value, r.error || 'unknown error', r.files.slice(0, 3).join(', ')]);
+      }
+      core.summary.addTable(urows);
+      core.summary.addRaw('These indicators were NOT checked -- the lookup failed. They are unverified, not clean.');
+    }
 
     if (found.length) {
       core.summary.addHeading('Threats Detected', 3);
