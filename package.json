@@ -6,7 +6,7 @@
   "main": "index.js",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@actions/glob": "^0.5.0"
+    "@actions/glob": "^0.7.0"
   },
   "overrides": {
     "undici": "^6.27.0"
