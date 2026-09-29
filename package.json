@@ -1,15 +1,16 @@
 {
   "name": "dugganusa-action",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
-  "description": "GitHub Action: scan PRs for threat indicators against 1.5M+ IOCs",
+  "description": "GitHub Action: scan PRs for threat indicators against 1.9M+ IOCs",
   "main": "index.js",
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/glob": "^0.5.0"
   },
   "overrides": {
-    "undici": "^6.27.0"
+    "undici": "^6.29.0",
+    "brace-expansion": "^1.1.18"
   },
   "license": "MIT"
 }

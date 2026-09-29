@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.1] - 2026-09-29
+
+### Security
+- Cleared 7 open Dependabot alerts (3 high `brace-expansion`, 4 moderate `undici`, all transitive): overrides now force `undici ^6.29.0` and `brace-expansion ^1.1.18`; vendored `node_modules` refreshed. `npm audit`: 0 vulnerabilities.
+- First tagged release carrying the 1.4.0 fail-closed fix. 1.4.0 was committed on 2026-07-19 but never tagged, so anyone pinned to `v1.3.1` is still running the fail-open gate. **Upgrade.**
+
+### Changed
+- Refreshed corpus figures from the live `/api/v1/search/stats` (1.9M+ IOCs, ~68M documents across 70 indexes).
+- Removed the retired "275+ consumers in 46 countries" line. It counted blocked, User-Agent-less scrapers as consumers, so we stopped quoting it on 2026-05-30.
+
 ## [1.4.0] - 2026-07-19
 
 ### Security

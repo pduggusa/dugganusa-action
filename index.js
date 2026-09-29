@@ -148,7 +148,7 @@ async function run() {
     const reportHits = core.getInput('report-hits') !== 'false';
     const format = core.getInput('format');
 
-    core.info('DugganUSA Threat Intel Scan — 1.5M+ IOCs');
+    core.info('DugganUSA Threat Intel Scan — 1.9M+ IOCs');
     core.info('Scan pattern: ' + scanPatterns);
 
     // Find files

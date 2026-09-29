@@ -1,6 +1,6 @@
 # DugganUSA Threat Intel Scan — GitHub Action
 
-Scan PRs for IPs, domains, SHA256 hashes, and CVEs against 1.5M+ threat indicators. Block merges containing known-bad indicators.
+Scan PRs for IPs, domains, SHA256 hashes, and CVEs against 1.9M+ threat indicators. Block merges containing known-bad indicators.
 
 ## What's New (v1.3.0)
 
