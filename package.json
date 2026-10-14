@@ -2,7 +2,7 @@
   "name": "dugganusa-action",
   "version": "1.4.1",
   "private": true,
-  "description": "GitHub Action: scan PRs for threat indicators against 1.9M+ IOCs",
+  "description": "GitHub Action: scan PRs for threat indicators against the DugganUSA Feed",
   "main": "index.js",
   "dependencies": {
     "@actions/core": "^1.11.1",
