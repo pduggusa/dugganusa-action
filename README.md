@@ -101,6 +101,6 @@ Same DugganUSA Feed, surfaced wherever you live. Open source, MIT licensed, rece
 | **dugganusa-action** _(this repo)_ | GitHub Action |
 | [dredd-mcp](https://github.com/pduggusa/dredd-mcp) | Dredd: pre-flight MCP security |
 
-Backed by the [DugganUSA Feed](https://analytics.dugganusa.com/stix). Numbers are live: [/api/v1/search/stats](https://analytics.dugganusa.com/api/v1/search/stats). Pricing: [analytics.dugganusa.com/stix/pricing](https://analytics.dugganusa.com/stix/pricing). Contact: help@dugganusa.com.
+Backed by the [DugganUSA Feed](https://analytics.dugganusa.com/stix). Numbers are live: [/api/v1/search/stats](https://analytics.dugganusa.com/api/v1/search/stats). Pricing: [analytics.dugganusa.com/pricing](https://analytics.dugganusa.com/pricing). Contact: help@dugganusa.com.
 
 _Threat intelligence you can check._
