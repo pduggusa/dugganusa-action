@@ -28,7 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pduggusa/dugganusa-action@v1
+      # There is no floating v1 tag; pin a release tag (or its commit SHA).
+      - uses: pduggusa/dugganusa-action@v1.4.1
         with:
           api-key: ${{ secrets.DUGGANUSA_API_KEY }}  # free registered key — see below
           fail-on-match: 'true'
@@ -61,7 +62,9 @@ jobs:
 
 ## Free API Key
 
-The STIX feed is API-key-enforced: anonymous requests get `401`, an unregistered Bearer gets `429`. The **free tier is a free *registered* key** — register at [analytics.dugganusa.com/stix/register](https://analytics.dugganusa.com/stix/register) and pass it as `api-key`.
+The STIX feed is API-key-enforced: anonymous requests and unregistered keys get `401`; a key past its daily limit gets `429`. The **free tier is a free *registered* key** — register at [analytics.dugganusa.com/stix/register](https://analytics.dugganusa.com/stix/register) and pass it as `api-key`.
+
+**Free-tier budget:** the free key allows **10 lookups a day**, and the Action looks up every IOC candidate it finds (up to 50 per run). Anything it cannot check is UNKNOWN, and `fail-on-unknown` defaults to `fail-on-match` (`true`), so on a free key a repository with more than 10 candidates fails the check. Narrow `scan-patterns` (the default includes `md`, `json` and `txt`, which carry many domains), or use a paid key.
 
 ## Part of the DugganUSA Ecosystem
 

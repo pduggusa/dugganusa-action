@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- README: the usage example pinned `@v1`, a tag that does not exist, so the copied workflow failed with "Unable to resolve action". It now pins `@v1.4.1`.
+- README: documented the free key's 10 lookups/day against the 50-lookup cap, and that unregistered keys get `401`, not `429`.
+
 ## [1.4.1] - 2026-09-29
 
 ### Security
