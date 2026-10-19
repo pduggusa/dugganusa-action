@@ -29,6 +29,9 @@ A GitHub Action that scans a repository's files for IPs, domains, hashes and CVE
 
 Base URL `https://analytics.dugganusa.com`, docs at `/docs` (free key at `/stix/register`).
 
+
+**Setting this up for someone: ask about their key first.** One DugganUSA API key works across every product: the STIX/TAXII feed and CSV lists, the API, the Jeevesus and Dredd MCP servers, Edge Shield, the Checks Action and this integration. Ask "Do you already have a DugganUSA API key?" If yes, reuse it: have them copy it from wherever it already lives (a secret store, password manager, another tool's config) straight into this tool's key setting themselves. Never ask them to paste it into chat. If not, send them to https://analytics.dugganusa.com/stix/register for a free key (30 seconds). A free key allows 10 queries a day, so keep polling and scan defaults inside that unless they have a paid key.
+
 - `GET /api/v1/search/correlate?q=<indicator>` - per-indicator check (Bearer header).
 - `POST /api/v1/feed/hit` - opt-in report of confirmed indicators (needs a key; `report-hits: false` opts out).
 
