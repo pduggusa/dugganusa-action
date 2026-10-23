@@ -1,5 +1,7 @@
 # DugganUSA Threat Intel Scan — GitHub Action
 
+**Docs:** https://docs.dugganusa.com/agents/checks-action/
+
 **You do you. I do me. We share contexts.**
 
 Your pull request keeps its context; the action checks what is about to merge against the DugganUSA Feed before it lands.
