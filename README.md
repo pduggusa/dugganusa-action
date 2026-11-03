@@ -47,7 +47,8 @@ jobs:
 | Input | Description | Default |
 |-------|-------------|---------|
 | `api-key` | DugganUSA API key — free registered key ([register](https://analytics.dugganusa.com/stix/register)) | `''` |
-| `scan-patterns` | Glob pattern for files to scan | `**/*.{js,ts,py,json,yml,yaml,conf,cfg,ini,env,md,txt,tf,hcl}` |
+| `scan-patterns` | Glob patterns for files to scan, one per line. Braces such as `{js,ts}` are expanded; a leading `!` excludes | `**/*.{js,ts,py,json,yml,yaml,md,txt,tf,hcl}` plus `!**/node_modules/**` and `!**/.git/**` |
+| `include-secret-files` | Also scan files that routinely hold secrets (`.env`, keys, credentials, `tfstate`). Off by default | `false` |
 | `fail-on-match` | Fail the action if threats found | `true` |
 | `report-hits` | Report matched indicators to the [feed-efficacy](https://analytics.dugganusa.com/api/v1/feed-efficacy) liveness axis (`POST /api/v1/feed/hit`). Indicator-only — never repo/file/actor context. Requires `api-key`; non-fatal. Set `false` to opt out. | `true` |
 | `format` | Output format: table, json, markdown | `table` |
@@ -70,6 +71,8 @@ jobs:
 ## Free API Key
 
 The STIX feed is API-key-enforced: anonymous requests and unregistered keys get `401`; a key past its daily limit gets `429`. The **free tier is a free *registered* key** — register at [analytics.dugganusa.com/stix/register](https://analytics.dugganusa.com/stix/register) and pass it as `api-key`.
+
+**What leaves the runner.** For each unique indicator candidate the Action finds (an IPv4 address, a domain, a 64-character hex string treated as a SHA-256, a CVE id or an onion address), it sends that one value to `analytics.dugganusa.com` for a lookup. It does not send files, paths, repository names or your code. Candidates are not sent from files that routinely hold secrets (`.env`, keys, credentials, `tfstate`) unless you set `include-secret-files: true`, and a 64-character hex string in a `.conf`, `.cfg`, `.ini`, `.toml` or `.properties` file is not treated as a hash. A hash whose lookup fails is redacted in logs and in the job summary. If you point `scan-patterns` at files that hold tokens, those values can become candidates: keep secrets out of the patterns.
 
 **Free-tier budget:** the free key allows **10 lookups a day**, and the Action looks up every IOC candidate it finds (up to 50 per run). Anything it cannot check is UNKNOWN, and `fail-on-unknown` defaults to `fail-on-match` (`true`), so on a free key a repository with more than 10 candidates fails the check. Narrow `scan-patterns` (the default includes `md`, `json` and `txt`, which carry many domains), or use a paid key.
 

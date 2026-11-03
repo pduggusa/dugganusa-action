@@ -13,7 +13,14 @@ inputs:
   scan-patterns:
     description: 'Glob pattern for files to scan'
     required: false
-    default: '**/*.{js,ts,py,json,yml,yaml,conf,cfg,ini,env,md,txt,tf,hcl}'
+    default: |
+      **/*.{js,ts,py,json,yml,yaml,md,txt,tf,hcl}
+      !**/node_modules/**
+      !**/.git/**
+  include-secret-files:
+    description: 'Scan files that routinely hold secrets (.env, keys, credentials, tfstate). Off by default: indicator candidates are sent to the lookup API, and a 64-character hex string in such a file is more likely a token than a hash.'
+    required: false
+    default: 'false'
   fail-on-match:
     description: 'Fail the action (exit 1) if threat indicators are found'
     required: false

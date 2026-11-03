@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const glob = require('@actions/glob');
 const fs = require('fs');
 const https = require('https');
-const { expandPatterns } = require('./patterns');
+const { expandPatterns, isSecretFile, isConfigFile, redact } = require('./patterns');
 
 // Inline IOC patterns (self-contained, no external core dep for Action reliability)
 const PATTERNS = {
@@ -155,7 +155,11 @@ async function run() {
 
     // Find files
     const globber = await glob.create(patterns.join('\n'), { followSymbolicLinks: false });
-    const files = await globber.glob();
+    const allMatched = await globber.glob();
+    const includeSecrets = core.getInput('include-secret-files') === 'true';
+    const skippedSecret = includeSecrets ? [] : allMatched.filter(isSecretFile);
+    const files = includeSecrets ? allMatched : allMatched.filter(f => !isSecretFile(f));
+    if (skippedSecret.length) core.info('Skipped ' + skippedSecret.length + ' secret-bearing file(s) (.env, keys, credentials and similar). Set include-secret-files: true to scan them.');
     core.info('Found ' + files.length + ' files to scan');
     core.setOutput('files', String(files.length));
     if (files.length === 0) core.warning('No files matched scan-patterns, so nothing was scanned. That is UNKNOWN, not clean. Check the pattern.');
@@ -164,7 +168,7 @@ async function run() {
     const allIOCs = new Map(); // value -> { type, files: [] }
     for (const file of files) {
       const text = fs.readFileSync(file, 'utf8');
-      const iocs = extractIOCs(text);
+      const iocs = extractIOCs(text).filter(i => !(i.type === 'sha256' && isConfigFile(file)));
       for (const ioc of iocs) {
         if (!allIOCs.has(ioc.value.toLowerCase())) {
           allIOCs.set(ioc.value.toLowerCase(), { value: ioc.value, type: ioc.type, files: [] });
@@ -208,7 +212,7 @@ async function run() {
     if (unknown.length) {
       core.warning('DugganUSA: ' + unknown.length + ' indicator(s) could NOT be checked (lookup failed). These are UNVERIFIED, not clean.');
       for (const r of unknown) {
-        core.warning(r.value + ' -- lookup failed: ' + (r.error || 'unknown error') + ' (in: ' + r.files.slice(0, 3).join(', ') + ')', {
+        core.warning(redact(r) + ' -- lookup failed: ' + (r.error || 'unknown error') + ' (in: ' + r.files.slice(0, 3).join(', ') + ')', {
           title: 'Threat Lookup Failed (unverified)',
         });
       }
@@ -269,7 +273,7 @@ async function run() {
         [{ data: 'Indicator', header: true }, { data: 'Reason', header: true }, { data: 'File(s)', header: true }],
       ];
       for (const r of unknown) {
-        urows.push([r.value, r.error || 'unknown error', r.files.slice(0, 3).join(', ')]);
+        urows.push([redact(r), r.error || 'unknown error', r.files.slice(0, 3).join(', ')]);
       }
       core.summary.addTable(urows);
       core.summary.addRaw('These indicators were NOT checked -- the lookup failed. They are unverified, not clean.');

@@ -1,6 +1,17 @@
 # Changelog
 
-## [1.4.2] - 2026-11-03
+## [1.4.3] - 2026-11-03
+
+### Security
+- **Use 1.4.3, not 1.4.2.** 1.4.2 made the default `scan-patterns` actually match files (see below), and that default included `.env`, `.ini`, `.cfg` and `.conf`. A 64-character hex token in such a file could become a hash candidate, be sent to the lookup API in a URL, and, if the lookup failed, be printed into the job log and summary (public in a public repository). Found by an automated review minutes after the 1.4.2 release.
+- The default no longer includes `env`, `ini`, `cfg` or `conf`, and excludes `node_modules` and `.git`.
+- Files that routinely hold secrets (`.env*`, `.npmrc`, `.netrc`, keys, `*credentials*`, `tfvars`, `tfstate`) are skipped by name even if a pattern matches them. New input `include-secret-files` (default `false`) opts in.
+- A 64-character hex string in a `.conf`, `.cfg`, `.ini`, `.toml` or `.properties` file is no longer treated as a hash candidate.
+- A hash whose lookup fails is redacted (first 8 characters) in warnings and in the job summary.
+- README: a plain statement of what leaves the runner.
+- 26 tests (`npm test`), including real glob runs, the secret-file list and redaction.
+
+## [1.4.2] - 2026-11-03 (superseded by 1.4.3; see the Security note above)
 
 ### Security
 - `undici` 6.29.0 to 6.29.1 (transitive, via `@actions/http-client`): clears GHSA-xjj6-f33q-929c (high, denial of service through excessive content-encodings) and GHSA-4qv8-2p9j-2685 (medium, unbounded memory in the EventSource parser). The override now pins `^6.29.1`.
