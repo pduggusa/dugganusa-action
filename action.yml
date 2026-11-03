@@ -51,5 +51,5 @@ outputs:
     description: 'Number of IOC candidates that could NOT be checked (lookup failed). These are unverified, not clean.'
 
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'index.js'

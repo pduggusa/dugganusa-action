@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.4] - 2026-11-03
+
+### Changed
+- **Runtime `node20` to `node24`.** Node 20 reached end of life on 2026-04-30. Node 24 ("Krypton") is the runtime GitHub Actions offers in its place; `node22` is not an Actions runtime. Self-hosted runners need Actions Runner 2.327.1 or later. Hosted runners already have it.
+- The log now starts with `Runtime: node vX.Y.Z`, so a run shows which Node executed it.
+- Added a manual `Self-test` workflow that runs this Action from the repository on a hosted runner and fails if it scans no files.
+
 ## [1.4.3] - 2026-11-03
 
 ### Security

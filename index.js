@@ -150,6 +150,7 @@ async function run() {
     const format = core.getInput('format');
 
     core.info('DugganUSA Threat Intel Scan — 1.9M+ IOCs');
+    core.info('Runtime: node ' + process.version);
     const patterns = expandPatterns(scanPatterns);
     core.info('Scan patterns: ' + patterns.join(' | '));
 

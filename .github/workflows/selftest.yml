@@ -1,0 +1,27 @@
+name: Self-test
+# Runs this Action from this checkout on a GitHub-hosted runner. Manual: a push does not spend minutes.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run the Action from this checkout
+        id: scan
+        uses: ./
+        with:
+          scan-patterns: |
+            index.js
+            patterns.js
+          fail-on-match: 'false'
+          fail-on-unknown: 'false'
+          report-hits: 'false'
+      - name: The scan must have looked at both files
+        env:
+          FILES: ${{ steps.scan.outputs.files }}
+        run: test "$FILES" = "2"
