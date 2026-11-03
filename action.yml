@@ -32,6 +32,8 @@ inputs:
     default: 'table'
 
 outputs:
+  files:
+    description: 'Number of files matched by scan-patterns and scanned. 0 means nothing was scanned (a warning is logged).'
   found:
     description: 'Number of threat indicators found'
   scanned:

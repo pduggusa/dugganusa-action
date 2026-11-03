@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const glob = require('@actions/glob');
 const fs = require('fs');
 const https = require('https');
+const { expandPatterns } = require('./patterns');
 
 // Inline IOC patterns (self-contained, no external core dep for Action reliability)
 const PATTERNS = {
@@ -149,12 +150,15 @@ async function run() {
     const format = core.getInput('format');
 
     core.info('DugganUSA Threat Intel Scan — 1.9M+ IOCs');
-    core.info('Scan pattern: ' + scanPatterns);
+    const patterns = expandPatterns(scanPatterns);
+    core.info('Scan patterns: ' + patterns.join(' | '));
 
     // Find files
-    const globber = await glob.create(scanPatterns, { followSymbolicLinks: false });
+    const globber = await glob.create(patterns.join('\n'), { followSymbolicLinks: false });
     const files = await globber.glob();
     core.info('Found ' + files.length + ' files to scan');
+    core.setOutput('files', String(files.length));
+    if (files.length === 0) core.warning('No files matched scan-patterns, so nothing was scanned. That is UNKNOWN, not clean. Check the pattern.');
 
     // Extract IOCs from all files
     const allIOCs = new Map(); // value -> { type, files: [] }

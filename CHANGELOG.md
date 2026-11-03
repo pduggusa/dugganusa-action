@@ -1,8 +1,19 @@
 # Changelog
 
-## [Unreleased]
+## [1.4.2] - 2026-11-03
+
+### Security
+- `undici` 6.29.0 to 6.29.1 (transitive, via `@actions/http-client`): clears GHSA-xjj6-f33q-929c (high, denial of service through excessive content-encodings) and GHSA-4qv8-2p9j-2685 (medium, unbounded memory in the EventSource parser). The override now pins `^6.29.1`.
+- Known and not fixable here: `minimatch` (via `@actions/glob`) has GHSA-g3hv-75wg-m249 (moderate, denial of service through glob-part amplification), and no `@actions/glob` release picks up a fixed `minimatch`. The only patterns it processes are the ones the workflow author writes in `scan-patterns`.
 
 ### Fixed
+- **The default `scan-patterns` matched zero files.** `@actions/glob` does not expand braces, so `**/*.{js,ts,py,...}` matched nothing and the Action reported a clean scan of no files. This has been true since v1.0.0 (2026-04-17), in every release. Braces are now expanded before the glob runs, and `scan-patterns` also accepts one pattern per line, including `!` excludes. If you ran the default and always saw a clean result, re-run it: it is now looking at your files.
+
+### Added
+- `files` output: the number of files scanned. A run that matches no files logs a warning that nothing was scanned, which is unknown, not clean.
+- `npm test`: checks that the default pattern expands and matches real files.
+
+### Fixed (docs)
 - README: the usage example pinned `@v1`, a tag that does not exist, so the copied workflow failed with "Unable to resolve action". It now pins `@v1.4.1`.
 - README: documented the free key's 10 lookups/day against the 50-lookup cap, and that unregistered keys get `401`, not `429`.
 
