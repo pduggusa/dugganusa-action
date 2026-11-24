@@ -4,6 +4,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Never propose a release younger than 14 days (supply-chain cooldown; matches our pinning rule).
+    cooldown:
+      default-days: 14
     groups:
       actions:
         patterns: ["*"]
@@ -11,6 +14,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Never propose a release younger than 14 days (supply-chain cooldown; matches our pinning rule).
+    cooldown:
+      default-days: 14
     open-pull-requests-limit: 5
     groups:
       npm-minor-patch:
@@ -20,4 +26,7 @@ updates:
       # export and 5.x is ESM. Majors need a code change, not a bump. The override follows the
       # direct dependency ("$brace-expansion"), so minimatch gets the same patched 1.x.
       - dependency-name: brace-expansion
+        update-types: ["version-update:semver-major"]
+      # index.js is CommonJS; @actions/core 2.x+ and @actions/glob majors are ESM-only. Majors need a code change.
+      - dependency-name: "@actions/*"
         update-types: ["version-update:semver-major"]
