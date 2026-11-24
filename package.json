@@ -11,7 +11,7 @@
   },
   "overrides": {
     "undici": "^6.29.1",
-    "brace-expansion": "^1.1.18"
+    "brace-expansion": "$brace-expansion"
   },
   "scripts": {
     "test": "node test-patterns.js"
