@@ -30,3 +30,6 @@ updates:
       # index.js is CommonJS; @actions/core 2.x+ and @actions/glob majors are ESM-only. Majors need a code change.
       - dependency-name: "@actions/*"
         update-types: ["version-update:semver-major"]
+      # @actions/glob is 0.x: a minor bump can be breaking (0.7.0 is ESM-only). Hold minors too.
+      - dependency-name: "@actions/glob"
+        update-types: ["version-update:semver-minor"]
